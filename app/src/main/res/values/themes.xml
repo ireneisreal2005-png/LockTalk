@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.LockTalk" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">#0A0E1A</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:navigationBarColor">#0A0E1A</item>
+    </style>
+    <style name="Theme.LockTalk" parent="Base.Theme.LockTalk" />
+</resources>
