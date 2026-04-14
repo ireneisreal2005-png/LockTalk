@@ -6,9 +6,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.proj.locktalk.databinding.ItemUserBinding
 import com.squareup.picasso.Picasso
+import java.text.SimpleDateFormat
+import java.util.*
 
 class UserAdapter(
-    private val users: MutableList<User>,
+    private val items: MutableList<ConversationItem>,
     private val onClick: (User) -> Unit
 ) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
@@ -23,15 +25,79 @@ class UserAdapter(
     }
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
-        val user = users[position]
+        val item = items[position]
+        val user = item.user
+
         holder.binding.tvName.text = user.name
-        holder.binding.tvStatus.text = if (user.isOnline) "online" else user.status
-        holder.binding.onlineDot.visibility = if (user.isOnline) View.VISIBLE else View.INVISIBLE
-        if (user.profileImage.isNotEmpty()) {
-            Picasso.get().load(user.profileImage).into(holder.binding.ivProfile)
+
+        when {
+            user.isTyping -> {
+                holder.binding.tvLastMessage.text = "typing..."
+                holder.binding.tvLastMessage.setTextColor(
+                    android.graphics.Color.parseColor("#00E5FF")
+                )
+            }
+            item.lastMessage.isNotEmpty() -> {
+                holder.binding.tvLastMessage.text = item.lastMessage
+                holder.binding.tvLastMessage.setTextColor(
+                    android.graphics.Color.parseColor("#5A7A9A")
+                )
+            }
+            else -> {
+                holder.binding.tvLastMessage.text = user.status
+                holder.binding.tvLastMessage.setTextColor(
+                    android.graphics.Color.parseColor("#5A7A9A")
+                )
+            }
         }
+
+        if (item.lastMessageTime > 0L) {
+            holder.binding.tvTime.text = formatTime(item.lastMessageTime)
+        } else {
+            holder.binding.tvTime.text = ""
+        }
+
+        if (item.unreadCount > 0) {
+            holder.binding.tvUnreadCount.visibility = View.VISIBLE
+            holder.binding.tvUnreadCount.text = if (item.unreadCount > 99) "99+"
+            else item.unreadCount.toString()
+        } else {
+            holder.binding.tvUnreadCount.visibility = View.GONE
+        }
+
+        holder.binding.onlineDot.visibility =
+            if (user.isOnline) View.VISIBLE else View.INVISIBLE
+
+        if (user.profileImage.isNotEmpty()) {
+            Picasso.get()
+                .load(user.profileImage)
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(holder.binding.ivProfile)
+        } else {
+            holder.binding.ivProfile.setImageResource(R.drawable.default_avatar)
+        }
+
         holder.itemView.setOnClickListener { onClick(user) }
     }
 
-    override fun getItemCount() = users.size
+    private fun formatTime(timestamp: Long): String {
+        val now = System.currentTimeMillis()
+        val diff = now - timestamp
+        val cal = Calendar.getInstance()
+        val msgCal = Calendar.getInstance().apply { timeInMillis = timestamp }
+
+        return when {
+            diff < 60_000 -> "now"
+            diff < 3600_000 -> "${diff / 60_000}m"
+            cal.get(Calendar.DAY_OF_YEAR) == msgCal.get(Calendar.DAY_OF_YEAR) ->
+                SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(timestamp))
+            diff < 7 * 24 * 3600_000L ->
+                SimpleDateFormat("EEE", Locale.getDefault()).format(Date(timestamp))
+            else ->
+                SimpleDateFormat("dd/MM/yy", Locale.getDefault()).format(Date(timestamp))
+        }
+    }
+
+    override fun getItemCount() = items.size
 }

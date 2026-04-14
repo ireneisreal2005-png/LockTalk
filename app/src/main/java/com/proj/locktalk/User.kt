@@ -8,5 +8,6 @@ data class User(
     val status: String = "Hey there! I am using LockTalk",
     val isOnline: Boolean = false,
     val lastSeen: Long = 0L,
-    val isTyping: Boolean = false
+    val isTyping: Boolean = false,
+    val fcmToken: String = ""
 )

@@ -1,79 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#0A0E1A"
-    android:padding="24dp"
-    android:gravity="center_horizontal"
-    android:fitsSystemWindows="true">
+    android:background="#060A14"
+    android:fillViewport="true">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="My Profile"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="28dp"
-        android:layout_marginTop="16dp"/>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:fitsSystemWindows="true">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/ivProfile"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@android:drawable/ic_menu_myplaces"
-        android:layout_marginBottom="8dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="32dp"
+            android:layout_marginTop="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tap to change photo"
-        android:textColor="#4F8EF7"
-        android:textSize="12sp"
-        android:layout_marginBottom="28dp"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="My Profile"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#E2EEFF"
+                android:letterSpacing="0.02"/>
 
-    <EditText
-        android:id="@+id/etName"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:hint="Your Name"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#4A5568"
-        android:background="@drawable/input_background"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:layout_marginBottom="14dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SECURE"
+                android:textSize="9sp"
+                android:textColor="#00E5FF"
+                android:letterSpacing="0.14"
+                android:background="@drawable/card_background"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"/>
 
-    <EditText
-        android:id="@+id/etStatus"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:hint="Your Status"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#4A5568"
-        android:background="@drawable/input_background"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:layout_marginBottom="28dp"/>
+        </LinearLayout>
 
-    <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Save Profile"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:backgroundTint="#4F8EF7"
-        android:layout_marginBottom="12dp"/>
+        <FrameLayout
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="10dp">
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:text="Logout"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:backgroundTint="#E53935"/>
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/ivProfile"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/default_avatar"/>
 
-</LinearLayout>
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="tap to change photo"
+            android:textColor="#00E5FF"
+            android:textSize="11sp"
+            android:letterSpacing="0.04"
+            android:layout_marginBottom="36dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DISPLAY NAME"
+            android:textSize="10sp"
+            android:textColor="#00E5FF"
+            android:letterSpacing="0.12"
+            android:layout_marginBottom="6dp"/>
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="Your name"
+            android:textColor="#E2EEFF"
+            android:textColorHint="#2A4060"
+            android:background="@drawable/input_background"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:textSize="15sp"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="STATUS"
+            android:textSize="10sp"
+            android:textColor="#00E5FF"
+            android:letterSpacing="0.12"
+            android:layout_marginBottom="6dp"/>
+
+        <EditText
+            android:id="@+id/etStatus"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="What's your status?"
+            android:textColor="#E2EEFF"
+            android:textColorHint="#2A4060"
+            android:background="@drawable/input_background"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:textSize="15sp"
+            android:layout_marginBottom="32dp"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="SAVE PROFILE"
+            android:textColor="#060A14"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:backgroundTint="#00E5FF"
+            android:layout_marginBottom="14dp"/>
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:text="SIGN OUT"
+            android:textColor="#FF2060"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1"
+            android:backgroundTint="#0F1729"
+            android:layout_marginBottom="32dp"/>
+
+    </LinearLayout>
+
+</ScrollView>

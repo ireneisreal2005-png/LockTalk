@@ -9,5 +9,9 @@ data class Message(
     val timestamp: Long = 0L,
     val type: String = "text",
     val mediaPermission: String = "allow_save",
-    val viewed: Boolean = false
+    val viewed: Boolean = false,
+    val delivered: Boolean = false,
+    val read: Boolean = false,
+    val reactions: Map<String, String> = emptyMap(),
+    val deleted: Boolean = false
 )

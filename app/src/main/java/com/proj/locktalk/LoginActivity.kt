@@ -17,6 +17,13 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // If already logged in, go straight to MainActivity
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
         auth = FirebaseAuth.getInstance()
 
         binding.btnLogin.setOnClickListener {

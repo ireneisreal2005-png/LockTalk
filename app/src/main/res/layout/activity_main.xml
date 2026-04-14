@@ -4,53 +4,79 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#0A0E1A"
+    android:background="#060A14"
     android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="#0D1221"
+        android:layout_height="68dp"
+        android:background="#0B1120"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
+        android:paddingStart="20dp"
         android:paddingEnd="16dp"
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:src="@android:drawable/ic_lock_lock"
-            app:tint="#4F8EF7"
+            app:tint="#00E5FF"
             android:layout_marginEnd="10dp"/>
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="LockTalk"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold"/>
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LockTalk"
+                android:textColor="#E2EEFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.04"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="end-to-end encrypted"
+                android:textColor="#00E5FF"
+                android:textSize="10sp"
+                android:letterSpacing="0.06"/>
+
+        </LinearLayout>
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/btnProfile"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@android:drawable/ic_menu_myplaces"
-            android:layout_marginEnd="4dp"/>
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@drawable/default_avatar"/>
 
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#1A2540"/>
+        android:background="#0D1E38"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CHATS"
+        android:textSize="10sp"
+        android:textColor="#2A4A6A"
+        android:letterSpacing="0.14"
+        android:paddingStart="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:clipToPadding="false"/>
 
 </LinearLayout>

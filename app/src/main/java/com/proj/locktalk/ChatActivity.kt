@@ -2,13 +2,11 @@ package com.proj.locktalk
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
@@ -33,7 +31,7 @@ class ChatActivity : AppCompatActivity() {
     private var receiverId = ""
     private var receiverName = ""
     private val IMAGE_PICK_CODE = 1001
-    private var pendingImageUri: Uri? = null
+    private var isFirstLoad = true
 
     private val typingHandler = Handler(Looper.getMainLooper())
     private val stopTypingRunnable = Runnable { setTyping(false) }
@@ -54,7 +52,13 @@ class ChatActivity : AppCompatActivity() {
 
         binding.tvReceiverName.text = receiverName
         if (receiverPhoto.isNotEmpty()) {
-            Picasso.get().load(receiverPhoto).into(binding.ivReceiverPhoto)
+            Picasso.get()
+                .load(receiverPhoto)
+                .placeholder(R.drawable.default_avatar)
+                .error(R.drawable.default_avatar)
+                .into(binding.ivReceiverPhoto)
+        } else {
+            binding.ivReceiverPhoto.setImageResource(R.drawable.default_avatar)
         }
 
         adapter = MessageAdapter(messageList, auth.currentUser?.uid ?: "", db)
@@ -96,31 +100,36 @@ class ChatActivity : AppCompatActivity() {
         loadMessages()
     }
 
-    private fun showMediaPermissionDialog(uri: Uri) {
-        val options = arrayOf(
-            "View Once  —  disappears after opened",
-            "Allow Save  —  receiver can save",
-            "No Save  —  visible in chat only"
-        )
-        AlertDialog.Builder(this)
-            .setTitle("Who controls this image?")
-            .setItems(options) { _, which ->
-                val permission = when (which) {
-                    0 -> "view_once"
-                    1 -> "allow_save"
-                    else -> "no_save"
+    private fun markMessagesAsRead() {
+        val currentUid = auth.currentUser?.uid ?: return
+        val chatId = if (currentUid < receiverId) "${currentUid}_${receiverId}"
+        else "${receiverId}_${currentUid}"
+
+        db.collection("chats").document(chatId)
+            .collection("messages")
+            .whereEqualTo("receiverId", currentUid)
+            .whereEqualTo("read", false)
+            .get()
+            .addOnSuccessListener { docs ->
+                val batch = db.batch()
+                docs.forEach { doc ->
+                    batch.update(doc.reference, "read", true)
                 }
-                uploadImage(uri, permission)
+                batch.commit()
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+    }
+
+    private fun resetUnread() {
+        val currentUid = auth.currentUser?.uid ?: return
+        db.collection("userChats").document(currentUid)
+            .collection("conversations").document(receiverId)
+            .set(mapOf("unreadCount" to 0), SetOptions.merge())
     }
 
     private fun setTyping(typing: Boolean) {
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).set(
-            mapOf("isTyping" to typing),
-            SetOptions.merge()
+            mapOf("isTyping" to typing), SetOptions.merge()
         )
     }
 
@@ -164,17 +173,57 @@ class ChatActivity : AppCompatActivity() {
             messageId = messageId,
             senderId = senderId,
             receiverId = receiverId,
-            message = text,
+            message = EncryptionHelper.encrypt(text),
             imageUrl = imageUrl,
             timestamp = System.currentTimeMillis(),
             type = type,
             mediaPermission = mediaPermission,
-            viewed = false
+            viewed = false,
+            delivered = true,
+            read = false
         )
 
         db.collection("chats").document(chatId)
             .collection("messages").document(messageId)
             .set(message)
+
+        updateConversation(text, type)
+
+        db.collection("users").document(senderId).get()
+            .addOnSuccessListener { doc ->
+                val sender = doc.toObject(User::class.java) ?: return@addOnSuccessListener
+                val notifBody = if (type == "image") "📷 Sent you an image" else "🔒 Encrypted message"
+                NotificationHelper.sendNotification(
+                    db, receiverId, sender.name, senderId, sender.profileImage, notifBody
+                )
+            }
+    }
+
+    private fun updateConversation(text: String, type: String) {
+        val senderId = auth.currentUser?.uid ?: return
+        val displayMessage = if (type == "image") "📷 Image" else text
+        val time = System.currentTimeMillis()
+
+        db.collection("userChats").document(senderId)
+            .collection("conversations").document(receiverId)
+            .set(mapOf(
+                "lastMessage" to displayMessage,
+                "lastMessageTime" to time,
+                "unreadCount" to 0
+            ), SetOptions.merge())
+
+        val receiverRef = db.collection("userChats").document(receiverId)
+            .collection("conversations").document(senderId)
+
+        db.runTransaction { transaction ->
+            val doc = transaction.get(receiverRef)
+            val currentUnread = doc.getLong("unreadCount") ?: 0
+            transaction.set(receiverRef, mapOf(
+                "lastMessage" to displayMessage,
+                "lastMessageTime" to time,
+                "unreadCount" to currentUnread + 1
+            ), SetOptions.merge())
+        }
     }
 
     private fun loadMessages() {
@@ -194,6 +243,11 @@ class ChatActivity : AppCompatActivity() {
                 adapter.notifyDataSetChanged()
                 if (messageList.isNotEmpty())
                     binding.recyclerView.scrollToPosition(messageList.size - 1)
+                markMessagesAsRead()
+                if (isFirstLoad) {
+                    resetUnread()
+                    isFirstLoad = false
+                }
             }
     }
 
@@ -203,6 +257,26 @@ class ChatActivity : AppCompatActivity() {
             val imageUri: Uri = data?.data ?: return
             showMediaPermissionDialog(imageUri)
         }
+    }
+
+    private fun showMediaPermissionDialog(uri: Uri) {
+        val options = arrayOf(
+            "View Once  —  disappears after opened",
+            "Allow Save  —  receiver can save",
+            "No Save  —  visible in chat only"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Who controls this image?")
+            .setItems(options) { _, which ->
+                val permission = when (which) {
+                    0 -> "view_once"
+                    1 -> "allow_save"
+                    else -> "no_save"
+                }
+                uploadImage(uri, permission)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun uploadImage(uri: Uri, permission: String) {
@@ -221,16 +295,19 @@ class ChatActivity : AppCompatActivity() {
         super.onResume()
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).set(
-            mapOf("isOnline" to true, "isTyping" to false, "lastSeen" to System.currentTimeMillis()),
+            mapOf("isOnline" to true, "isTyping" to false,
+                "lastSeen" to System.currentTimeMillis()),
             SetOptions.merge()
         )
+        markMessagesAsRead()
     }
 
     override fun onPause() {
         super.onPause()
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).set(
-            mapOf("isOnline" to false, "isTyping" to false, "lastSeen" to System.currentTimeMillis()),
+            mapOf("isOnline" to false, "isTyping" to false,
+                "lastSeen" to System.currentTimeMillis()),
             SetOptions.merge()
         )
     }

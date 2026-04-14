@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="bg_primary">#060A14</color>
+    <color name="bg_surface">#0B1120</color>
+    <color name="bg_card">#0F1729</color>
+    <color name="neon_cyan">#00E5FF</color>
+    <color name="neon_purple">#9D4EDD</color>
+    <color name="hot_pink">#FF2060</color>
+    <color name="text_primary">#E2EEFF</color>
+    <color name="text_secondary">#5A7A9A</color>
+    <color name="border_subtle">#1E3050</color>
+    <color name="online_green">#00FF88</color>
+    <color name="bubble_sent">#0D2847</color>
+    <color name="bubble_received">#111C33</color>
 </resources>
