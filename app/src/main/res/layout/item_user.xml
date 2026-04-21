@@ -30,6 +30,37 @@
             android:visibility="invisible"/>
 
     </FrameLayout>
+    <ImageView
+        android:id="@+id/pinIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_pin"
+        android:visibility="gone"
+        android:layout_marginEnd="4dp"/>
+
+    <ImageView
+        android:id="@+id/muteIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_mute"
+        android:visibility="gone"
+        android:layout_marginEnd="4dp"/>
+
+    <ImageView
+        android:id="@+id/banIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_ban"
+        android:visibility="gone"
+        android:layout_marginEnd="4dp"/>
+
+    <ImageView
+        android:id="@+id/blockIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_block"
+        android:tint="#FF3B30"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="0dp"

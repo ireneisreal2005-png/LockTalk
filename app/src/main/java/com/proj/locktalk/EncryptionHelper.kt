@@ -7,9 +7,6 @@ import javax.crypto.spec.SecretKeySpec
 
 object EncryptionHelper {
 
-    // This is the shared secret key — 32 chars = 256 bit AES
-    // In a real production app this would be exchanged securely
-    // For your project this is still real AES-256 encryption
     private const val SECRET_KEY = "LockTalk2024SecureKey!@#XYZ12345"
 
     private fun getKey(): SecretKeySpec {
@@ -23,11 +20,10 @@ object EncryptionHelper {
             cipher.init(Cipher.ENCRYPT_MODE, getKey())
             val iv = cipher.iv
             val encrypted = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
-            // combine iv + encrypted and base64 encode
             val combined = iv + encrypted
             Base64.encodeToString(combined, Base64.NO_WRAP)
         } catch (e: Exception) {
-            plainText // fallback to plain if error
+            plainText
         }
     }
 
@@ -40,7 +36,7 @@ object EncryptionHelper {
             cipher.init(Cipher.DECRYPT_MODE, getKey(), IvParameterSpec(iv))
             String(cipher.doFinal(encrypted), Charsets.UTF_8)
         } catch (e: Exception) {
-            encryptedText // fallback to show as-is if error
+            encryptedText
         }
     }
 }

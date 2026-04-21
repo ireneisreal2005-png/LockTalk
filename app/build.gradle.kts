@@ -54,4 +54,5 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation("com.google.firebase:firebase-messaging:23.4.0")
     implementation("com.google.crypto.tink:tink-android:1.9.0")
+    implementation("androidx.biometric:biometric:1.1.0")
 }

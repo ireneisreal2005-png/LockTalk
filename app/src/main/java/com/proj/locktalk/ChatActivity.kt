@@ -18,6 +18,7 @@ import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.proj.locktalk.databinding.ActivityChatBinding
 import com.squareup.picasso.Picasso
+import com.proj.locktalk.ContentFilter
 import java.util.UUID
 
 class ChatActivity : AppCompatActivity() {
@@ -40,7 +41,10 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        window.setFlags(
+            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+            android.view.WindowManager.LayoutParams.FLAG_SECURE
+        )
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
@@ -68,9 +72,38 @@ class ChatActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
 
         binding.btnSend.setOnClickListener {
-            val text = binding.etMessage.text.toString().trim()
-            if (text.isNotEmpty()) {
-                sendMessage(text, "", "text", "allow_save")
+
+            val originalText = binding.etMessage.text.toString().trim()
+            if (originalText.isEmpty()) return@setOnClickListener
+
+            if (ContentFilter.isExplicit(originalText)) {
+                Toast.makeText(this, "Message blocked", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (ContentFilter.containsSuicidalContent(originalText)) {
+                showHelpDialog()
+            }
+
+            val filteredText = ContentFilter.filterText(originalText)
+
+            val url = extractUrl(originalText)?.let {
+                if (!it.startsWith("http")) "https://$it" else it
+            }
+
+            if (url != null) {
+                SafeBrowsingHelper.checkUrl(url) { isSafe ->
+                    runOnUiThread {
+                        if (isSafe) {
+                            sendMessage(filteredText, "", "text", "allow_save")
+                            binding.etMessage.setText("")
+                        } else {
+                            Toast.makeText(this, "Unsafe link blocked", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } else {
+                sendMessage(filteredText, "", "text", "allow_save")
                 binding.etMessage.setText("")
             }
         }
@@ -164,6 +197,16 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun sendMessage(text: String, imageUrl: String, type: String, mediaPermission: String) {
+        db.collection("users").document(receiverId).get().addOnSuccessListener { doc ->
+
+            val banned = doc.getBoolean("banned") ?: false
+
+            if (banned) {
+                Toast.makeText(this, "User is banned ", Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener
+            }
+
+        }
         val senderId = auth.currentUser?.uid ?: return
         val chatId = if (senderId < receiverId) "${senderId}_${receiverId}"
         else "${receiverId}_${senderId}"
@@ -192,16 +235,26 @@ class ChatActivity : AppCompatActivity() {
         db.collection("users").document(senderId).get()
             .addOnSuccessListener { doc ->
                 val sender = doc.toObject(User::class.java) ?: return@addOnSuccessListener
-                val notifBody = if (type == "image") "📷 Sent you an image" else "🔒 Encrypted message"
+                val notifBody = if (type == "image") "Sent you an image" else "Encrypted message"
                 NotificationHelper.sendNotification(
                     db, receiverId, sender.name, senderId, sender.profileImage, notifBody
                 )
             }
+        db.collection("users").document(receiverId).get().addOnSuccessListener { doc ->
+
+            val banned = doc.getBoolean("banned") ?: false
+
+            if (banned) {
+                Toast.makeText(this, "User is banned", Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener
+            }
+
+        }
     }
 
     private fun updateConversation(text: String, type: String) {
         val senderId = auth.currentUser?.uid ?: return
-        val displayMessage = if (type == "image") "📷 Image" else text
+        val displayMessage = if (type == "image") "Image" else text
         val time = System.currentTimeMillis()
 
         db.collection("userChats").document(senderId)
@@ -289,6 +342,23 @@ class ChatActivity : AppCompatActivity() {
         }.addOnFailureListener {
             Toast.makeText(this, "Image upload failed", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showHelpDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Need Help?")
+            .setMessage("It seems like you're going through something. You're not alone ❤️")
+            .setPositiveButton("Call Helpline") { _, _ ->
+                val intent = Intent(Intent.ACTION_DIAL)
+                intent.data = Uri.parse("tel:9152987821") // example helpline
+                startActivity(intent)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    fun extractUrl(text: String): String? {
+        val regex = Regex("(https?://|www\\.)\\S+")
+        return regex.find(text)?.value
     }
 
     override fun onResume() {

@@ -11,7 +11,12 @@ import java.util.*
 
 class UserAdapter(
     private val items: MutableList<ConversationItem>,
-    private val onClick: (User) -> Unit
+    private val pinnedChats: Set<String>,
+    private val mutedChats: Set<String>,
+    private val bannedUsers: Set<String>,
+    private val blockedUsers: Set<String>,
+    private val onClick: (User) -> Unit,
+    private val onLongClick: (User) -> Unit
 ) : RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
     inner class UserViewHolder(val binding: ItemUserBinding) :
@@ -27,9 +32,22 @@ class UserAdapter(
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val item = items[position]
         val user = item.user
-
+        if (pinnedChats.contains(user.uid)) {
+            holder.binding.pinIcon.visibility = View.VISIBLE
+        } else {
+            holder.binding.pinIcon.visibility = View.GONE
+        }
         holder.binding.tvName.text = user.name
-
+        if (mutedChats.contains(user.uid)) {
+            holder.binding.muteIcon.visibility = View.VISIBLE
+        } else {
+            holder.binding.muteIcon.visibility = View.GONE
+        }
+        if (blockedUsers.contains(user.uid)) {
+            holder.binding.blockIcon.visibility = View.VISIBLE
+        } else {
+            holder.binding.blockIcon.visibility = View.GONE
+        }
         when {
             user.isTyping -> {
                 holder.binding.tvLastMessage.text = "typing..."
@@ -78,9 +96,18 @@ class UserAdapter(
             holder.binding.ivProfile.setImageResource(R.drawable.default_avatar)
         }
 
-        holder.itemView.setOnClickListener { onClick(user) }
-    }
+        holder.itemView.setOnClickListener {
+            onClick(user)
+        }
 
+        holder.itemView.setOnLongClickListener {
+            onLongClick(user)
+            true
+        }
+        if (bannedUsers.contains(user.uid)) {
+            holder.binding.tvLastMessage.text = "User is banned "
+        }
+    }
     private fun formatTime(timestamp: Long): String {
         val now = System.currentTimeMillis()
         val diff = now - timestamp

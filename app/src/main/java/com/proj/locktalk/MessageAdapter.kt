@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
 import com.proj.locktalk.databinding.ItemMessageReceivedBinding
 import com.proj.locktalk.databinding.ItemMessageSentBinding
+import com.proj.locktalk.ContentFilter
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
 
@@ -63,7 +64,7 @@ class MessageAdapter(
         val b = holder.binding
 
         if (message.deleted) {
-            b.tvMessage.text = "🚫 You deleted this message"
+            b.tvMessage.text = "You deleted this message"
             b.tvMessage.alpha = 0.5f
             b.tvMessage.visibility = View.VISIBLE
             b.imageContainer.visibility = View.GONE
@@ -77,7 +78,9 @@ class MessageAdapter(
         b.tvReadReceipt.visibility = View.VISIBLE
 
         if (message.type == "text") {
-            b.tvMessage.text = EncryptionHelper.decrypt(message.message)
+            val decrypted = EncryptionHelper.decrypt(message.message)
+            val safeText = ContentFilter.filterText(decrypted)
+            b.tvMessage.text = safeText
             b.tvMessage.visibility = View.VISIBLE
             b.imageContainer.visibility = View.GONE
         } else {
@@ -85,9 +88,9 @@ class MessageAdapter(
             b.imageContainer.visibility = View.VISIBLE
             Picasso.get().load(message.imageUrl).into(b.ivImage)
             b.tvMediaLabel.text = when (message.mediaPermission) {
-                "view_once" -> "👁 View once"
-                "no_save" -> "🔒 Cannot save"
-                else -> "💾 Can save"
+                "view_once" -> "View once"
+                "no_save" -> "Cannot save"
+                else -> "Can save"
             }
             b.btnSaveImage.visibility = View.GONE
             b.ivImage.setOnClickListener {
@@ -126,7 +129,7 @@ class MessageAdapter(
         val b = holder.binding
 
         if (message.deleted) {
-            b.tvMessage.text = "🚫 This message was deleted"
+            b.tvMessage.text = "This message was deleted"
             b.tvMessage.alpha = 0.5f
             b.tvMessage.visibility = View.VISIBLE
             b.imageContainer.visibility = View.GONE
@@ -138,7 +141,9 @@ class MessageAdapter(
         b.tvMessage.alpha = 1f
 
         if (message.type == "text") {
-            b.tvMessage.text = EncryptionHelper.decrypt(message.message)
+            val decrypted = EncryptionHelper.decrypt(message.message)
+            val safeText = ContentFilter.filterText(decrypted)
+            b.tvMessage.text = safeText
             b.tvMessage.visibility = View.VISIBLE
             b.imageContainer.visibility = View.GONE
         } else {
@@ -160,7 +165,7 @@ class MessageAdapter(
                 }
                 "allow_save" -> {
                     Picasso.get().load(message.imageUrl).into(b.ivImage)
-                    b.tvMediaLabel.text = "💾 You can save this"
+                    b.tvMediaLabel.text = "You can save this"
                     b.btnSaveImage.visibility = View.VISIBLE
                     b.btnSaveImage.setOnClickListener {
                         saveImageToGallery(it.context, message.imageUrl)
@@ -171,7 +176,7 @@ class MessageAdapter(
                 }
                 "no_save" -> {
                     Picasso.get().load(message.imageUrl).into(b.ivImage)
-                    b.tvMediaLabel.text = "🔒 Saving not allowed"
+                    b.tvMediaLabel.text = "Saving not allowed"
                     b.btnSaveImage.visibility = View.GONE
                     b.ivImage.setOnLongClickListener { true }
                     b.ivImage.setOnClickListener {

@@ -16,7 +16,10 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        window.setFlags(
+            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+            android.view.WindowManager.LayoutParams.FLAG_SECURE
+        )
         // If already logged in, go straight to MainActivity
         if (FirebaseAuth.getInstance().currentUser != null) {
             startActivity(Intent(this, MainActivity::class.java))
